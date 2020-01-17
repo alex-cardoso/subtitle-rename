@@ -1,14 +1,29 @@
 import os
-from os import listdir
 import re
+from pathlib import Path
+
+external = str(input('Estao em HD externo? s/n: '))
+path = str(input('Qual o diretorio: '))
+season = str(input('Qual temporada: '))
+episodes = int(input('Numero de episodios: '))
+
+directory = path.strip() if external == 's' else str(Path.home())+path
+
+if len(season) != 2:
+    print('A temporada tem que ter 2 caracteres, se for menor que 10, use o 0 antes, como 01, 02..etc..')
+    exit()
+
+if not os.path.isdir(directory):
+    print('Diretório '+directory+' não existe')
+    exit()
+
+files = os.listdir(directory)
 
 extensions_accepted = ['.avi', '.mp4', '.srt', '.mkv']
 
 
 def separate_movie_and_subtitles():
-    home = os.path.expanduser('~')
-    downloads = os.path.join(home, 'Downloads')
-    files = listdir(str(downloads + '/test_organizer'))
+
     movies_file = []
     subtitles_file = []
 
@@ -22,10 +37,10 @@ def separate_movie_and_subtitles():
                     subtitles_file.append(file)
                 else:
                     movies_file.append(file)
-    return {filename: filename, 'movies': movies_file, 'subtitles': subtitles_file, 'path': downloads + '/test_organizer/'}
+    return {filename: filename, 'movies': movies_file, 'subtitles': subtitles_file}
 
 
-def rename(season, episodes, files):
+def rename(files):
     for episode in range(1, episodes+1):
         if episode < 10:
             episode = '0'+str(episode)
@@ -39,9 +54,9 @@ def rename(season, episodes, files):
                 for subtitle in sorted(files['subtitles']):
                     if re.search(movie_string, subtitle.upper()):
                         os.rename(
-                            str(files['path']+str(subtitle)), str(files['path']+str(filename)+'.srt'))
+                            str(directory+'/'+subtitle), str(directory+'/'+filename)+'.srt')
                         print(movie)
 
 
 files = separate_movie_and_subtitles()
-rename('09', 24, files)
+rename(files)
